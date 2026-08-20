@@ -71,6 +71,20 @@ object ScheduleStore {
     }
 }
 
-class AlarmReceiver : BroadcastReceiver() { override fun onReceive(context: Context, intent: Intent) = NotificationSupport.show(context, intent.getIntExtra("id", 1), intent.getStringExtra("title") ?: "DayTrace", intent.getStringExtra("message") ?: "Scheduled activity") }
-class BootReceiver : BroadcastReceiver() { override fun onReceive(context: Context, intent: Intent) = ScheduleStore.reschedule(context) }
+class AlarmReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        NotificationSupport.show(
+            context,
+            intent.getIntExtra("id", 1),
+            intent.getStringExtra("title") ?: "DayTrace",
+            intent.getStringExtra("message") ?: "Scheduled activity",
+        )
+    }
+}
+
+class BootReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        ScheduleStore.reschedule(context)
+    }
+}
 class OverdueWorker(context: Context, params: WorkerParameters) : Worker(context, params) { override fun doWork(): Result { ScheduleStore.overdue(applicationContext); return Result.success() } }
