@@ -1,0 +1,7 @@
+{
+  "name": "AI Day-Tracker & Accountability",
+  "description": "Personal AI accountability, productivity, and day-tracking assistant with auto-learned quick updates, daily timetable routines (gym, meals, social posting), natural language state updates, timeline, and Android Material 3 interface.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
