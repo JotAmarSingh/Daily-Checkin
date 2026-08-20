@@ -15,6 +15,10 @@ import androidx.core.app.ActivityCompat
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.webkit.WebViewAssetLoader
+import androidx.webkit.WebViewClientCompat
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -32,11 +36,19 @@ class MainActivity : ComponentActivity() {
         webView = WebView(this)
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
-        webView.settings.allowFileAccess = true
-        webView.webViewClient = WebViewClient()
+        webView.settings.allowFileAccess = false
+        webView.settings.allowContentAccess = false
+        val assetLoader = WebViewAssetLoader.Builder()
+            .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
+            .build()
+        webView.webViewClient = object : WebViewClientCompat() {
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                return assetLoader.shouldInterceptRequest(request.url)
+            }
+        }
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(Bridge(), "DayTraceAndroid")
-        webView.loadUrl("file:///android_asset/www/index.html")
+        webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")
         setContentView(webView)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() { if (webView.canGoBack()) webView.goBack() else finish() }
