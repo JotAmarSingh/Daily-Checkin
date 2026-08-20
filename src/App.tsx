@@ -12,11 +12,13 @@ import { TimelineView } from './components/views/TimelineView';
 import { RemindersAnchorsView } from './components/views/RemindersAnchorsView';
 import { EndOfDayReviewView } from './components/views/EndOfDayReviewView';
 import { isNativeAndroidApp } from './utils/platform';
+import { TutorialOverlay } from './components/TutorialOverlay';
 
 const MainScreen: React.FC = () => {
   const isNativeAndroid = isNativeAndroidApp();
   const [activeTab, setActiveTab] = useState<AndroidTab>('hub');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   const renderActiveView = () => {
     switch (activeTab) {
@@ -43,7 +45,7 @@ const MainScreen: React.FC = () => {
       {!isNativeAndroid && <AndroidStatusBar onOpenNotifications={() => setIsNotificationsOpen(true)} />}
 
       {/* Android Material 3 Top App Bar */}
-      <AndroidTopAppBar nativeMode={isNativeAndroid} />
+      <AndroidTopAppBar nativeMode={isNativeAndroid} onOpenTutorial={() => setIsTutorialOpen(true)} />
 
       {/* Primary Dynamic Screen View */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -60,6 +62,8 @@ const MainScreen: React.FC = () => {
           onClose={() => setIsNotificationsOpen(false)}
         />
       )}
+
+      {isTutorialOpen && <TutorialOverlay onClose={() => setIsTutorialOpen(false)} onNavigate={setActiveTab} />}
     </div>
   );
 };

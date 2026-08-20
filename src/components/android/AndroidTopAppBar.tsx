@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, MapPin, Zap, RefreshCw, FileSpreadsheet, Copy, Check, Download, AlertTriangle, Smartphone, ExternalLink, X } from 'lucide-react';
+import { Sparkles, MapPin, Zap, RefreshCw, FileSpreadsheet, Copy, Check, Download, AlertTriangle, Smartphone, ExternalLink, X, CircleHelp } from 'lucide-react';
 import { useDay } from '../../context/DayContext';
 import { AppMode, EnergyLevel } from '../../types';
 
 interface AndroidTopAppBarProps {
   onOpenSettings?: () => void;
   nativeMode?: boolean;
+  onOpenTutorial?: () => void;
 }
 
-export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = ({ nativeMode = false }) => {
+export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = ({ nativeMode = false, onOpenTutorial }) => {
   const { state, mode, setMode, setCurrentEnergy, resetToDefault, exportDataJSON, exportDataSheetsCSV, importDataJSON } = useDay();
   const [showEnergyMenu, setShowEnergyMenu] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
@@ -144,6 +145,16 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = ({ nativeMode =
           )}
 
           <button
+            id="tutorial-help-btn"
+            onClick={onOpenTutorial}
+            className="p-2 rounded-xl text-[#C4C6D0] hover:text-[#D1E1FF] hover:bg-[#2E3036] transition"
+            title="How to use DayTrace"
+            aria-label="Open DayTrace tutorial"
+          >
+            <CircleHelp className="w-4 h-4 text-[#D1E1FF]" />
+          </button>
+
+          <button
             id="google-sheets-sync-btn"
             onClick={() => setShowSyncModal(true)}
             className="p-2 rounded-xl text-[#C4C6D0] hover:text-[#D1E1FF] hover:bg-[#2E3036] transition"
@@ -155,7 +166,7 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = ({ nativeMode =
           <button
             id="reset-day-btn"
             onClick={() => {
-              if (confirm('Reset day tracker to default demo state?')) {
+              if (confirm('Clear DayTrace and return to a fresh start?')) {
                 resetToDefault();
               }
             }}

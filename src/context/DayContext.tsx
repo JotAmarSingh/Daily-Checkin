@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { DailyState, TaskItem, TaskStatus, TimelineEvent, FixedEvent, ReminderItem, AppMode, EnergyLevel, TimetableSlot, RoutineSlotStatus } from '../types';
 import { INITIAL_DAILY_STATE } from '../utils/initialState';
+import { createFreshDailyState } from '../utils/freshState';
 import { recordTaskInteraction, recordRoutineInteraction, getLearningProfile, resetLearningProfile, AutoLearningProfile } from '../utils/autoLearning';
 import { processOfflineUpdate } from '../utils/offlineAi';
 import { syncNativeSchedule } from '../utils/nativeBridge';
 
-const STORAGE_KEY = 'ai_day_tracker_state_v1';
+// v2 intentionally ignores the scaffold's pre-filled demonstration state.
+const STORAGE_KEY = 'daytrace_state_v2';
 
 interface DayContextType {
   state: DailyState;
@@ -47,20 +49,21 @@ const DayContext = createContext<DayContextType | undefined>(undefined);
 
 export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<DailyState>(() => {
+    const freshState = createFreshDailyState();
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         return {
-          ...INITIAL_DAILY_STATE,
+          ...freshState,
           ...parsed,
-          timetable: parsed.timetable && parsed.timetable.length > 0 ? parsed.timetable : INITIAL_DAILY_STATE.timetable,
+          timetable: Array.isArray(parsed.timetable) ? parsed.timetable : [],
         };
       }
     } catch (e) {
       console.error('Failed to load state from localStorage', e);
     }
-    return INITIAL_DAILY_STATE;
+    return freshState;
   });
 
   const [mode, setMode] = useState<AppMode>('ACCOUNTABILITY');
@@ -814,7 +817,7 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const resetToDefault = useCallback(() => {
-    setState(INITIAL_DAILY_STATE);
+    setState(createFreshDailyState());
   }, []);
 
   const exportDataJSON = useCallback(() => {

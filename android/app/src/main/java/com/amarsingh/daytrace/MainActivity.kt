@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.graphics.Color
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -12,6 +13,9 @@ import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.core.app.ActivityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -34,6 +38,7 @@ class MainActivity : ComponentActivity() {
         WorkManager.getInstance(this).enqueueUniquePeriodicWork("daytrace-overdue-scan", ExistingPeriodicWorkPolicy.UPDATE, PeriodicWorkRequestBuilder<OverdueWorker>(15, TimeUnit.MINUTES).build())
 
         webView = WebView(this)
+        webView.setBackgroundColor(Color.rgb(17, 19, 24))
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
         webView.settings.allowFileAccess = false
@@ -48,6 +53,12 @@ class MainActivity : ComponentActivity() {
         }
         webView.webChromeClient = WebChromeClient()
         webView.addJavascriptInterface(Bridge(), "DayTraceAndroid")
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        ViewCompat.setOnApplyWindowInsetsListener(webView) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         webView.loadUrl("https://appassets.androidplatform.net/assets/www/index.html")
         setContentView(webView)
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
