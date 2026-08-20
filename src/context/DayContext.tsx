@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { DailyState, TaskItem, TaskStatus, TimelineEvent, FixedEvent, ReminderItem, AppMode, EnergyLevel, TimetableSlot, RoutineSlotStatus } from '../types';
 import { INITIAL_DAILY_STATE } from '../utils/initialState';
 import { recordTaskInteraction, recordRoutineInteraction, getLearningProfile, resetLearningProfile, AutoLearningProfile } from '../utils/autoLearning';
+import { processOfflineUpdate } from '../utils/offlineAi';
+import { syncNativeSchedule } from '../utils/nativeBridge';
 
 const STORAGE_KEY = 'ai_day_tracker_state_v1';
 
@@ -87,6 +89,7 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.error('Failed to save state to localStorage', e);
     }
+    syncNativeSchedule(state);
   }, [state]);
 
   // Live time ticker
@@ -102,7 +105,7 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, []);
 
-  // Process natural language input via server-side Gemini
+  // Process natural language input locally; no API key or network is required.
   const processUserInput = useCallback(async (userInput: string): Promise<string> => {
     if (!userInput.trim()) return '';
     setIsProcessing(true);
@@ -125,18 +128,7 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     try {
-      const res = await fetch('/api/ai/process-update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userInput,
-          currentState: state,
-          mode,
-          currentTime: userTimestamp,
-        }),
-      });
-
-      const data = await res.json();
+      const data = processOfflineUpdate(userInput, state, userTimestamp);
       const { aiResponseText, extractedStateUpdate } = data;
 
       // Apply extracted state updates cleanly

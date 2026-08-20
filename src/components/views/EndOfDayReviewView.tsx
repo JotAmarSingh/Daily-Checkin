@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart3, Sparkles, CheckCircle2, Clock, CornerDownRight, AlertCircle, Calendar, Copy, Check } from 'lucide-react';
 import { useDay } from '../../context/DayContext';
+import { generateOfflineReview } from '../../utils/offlineAi';
 
 export const EndOfDayReviewView: React.FC = () => {
   const { state } = useDay();
@@ -21,13 +22,7 @@ export const EndOfDayReviewView: React.FC = () => {
   const handleGenerateAIReview = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/ai/end-of-day-review', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dailyState: state }),
-      });
-      const data = await res.json();
-      setReviewData(data);
+      setReviewData(generateOfflineReview(state));
     } catch (e) {
       console.error('Failed to generate AI review', e);
       setReviewData({
@@ -111,7 +106,7 @@ export const EndOfDayReviewView: React.FC = () => {
               className="flex-1 py-3 px-4 bg-[#D1E1FF] hover:bg-white text-[#003062] font-bold rounded-2xl text-xs flex items-center justify-center space-x-2 transition shadow-md disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 text-[#003062]" />
-              <span>{isGenerating ? 'Synthesizing with Gemini...' : 'Generate AI Daily Review'}</span>
+              <span>{isGenerating ? 'Analyzing on device...' : 'Generate Offline Daily Review'}</span>
             </button>
 
             <button
@@ -289,4 +284,3 @@ export const EndOfDayReviewView: React.FC = () => {
     </div>
   );
 };
-
