@@ -5,9 +5,10 @@ import { AppMode, EnergyLevel } from '../../types';
 
 interface AndroidTopAppBarProps {
   onOpenSettings?: () => void;
+  nativeMode?: boolean;
 }
 
-export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
+export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = ({ nativeMode = false }) => {
   const { state, mode, setMode, setCurrentEnergy, resetToDefault, exportDataJSON, exportDataSheetsCSV, importDataJSON } = useDay();
   const [showEnergyMenu, setShowEnergyMenu] = useState(false);
   const [showModeMenu, setShowModeMenu] = useState(false);
@@ -20,6 +21,11 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
   const [importStatus, setImportStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    if (nativeMode) {
+      setIsInstalled(true);
+      return;
+    }
+
     // Check if already in standalone mode
     if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone) {
       setIsInstalled(true);
@@ -32,7 +38,7 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
 
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+  }, [nativeMode]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -125,7 +131,7 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
 
         {/* Right: Quick Actions */}
         <div className="flex items-center space-x-1.5">
-          {!isInstalled && (
+          {!nativeMode && !isInstalled && (
             <button
               id="install-pixel-btn"
               onClick={handleInstallClick}
@@ -300,7 +306,7 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
       )}
 
       {/* Install on Pixel / Standalone App Modal */}
-      {showInstallModal && (
+      {!nativeMode && showInstallModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm" onClick={() => setShowInstallModal(false)}>
           <div className="bg-[#1D2026] text-[#E2E2E6] border border-[#44474E]/50 rounded-[32px] p-6 shadow-2xl max-w-sm w-full space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between pb-3 border-b border-[#44474E]/30">
@@ -362,4 +368,3 @@ export const AndroidTopAppBar: React.FC<AndroidTopAppBarProps> = () => {
     </>
   );
 };
-

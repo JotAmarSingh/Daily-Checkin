@@ -11,10 +11,10 @@ import { TaskBoardView } from './components/views/TaskBoardView';
 import { TimelineView } from './components/views/TimelineView';
 import { RemindersAnchorsView } from './components/views/RemindersAnchorsView';
 import { EndOfDayReviewView } from './components/views/EndOfDayReviewView';
-
-const isNativeAndroid = typeof window !== 'undefined' && Boolean(window.DayTraceAndroid);
+import { isNativeAndroidApp } from './utils/platform';
 
 const MainScreen: React.FC = () => {
+  const isNativeAndroid = isNativeAndroidApp();
   const [activeTab, setActiveTab] = useState<AndroidTab>('hub');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -43,7 +43,7 @@ const MainScreen: React.FC = () => {
       {!isNativeAndroid && <AndroidStatusBar onOpenNotifications={() => setIsNotificationsOpen(true)} />}
 
       {/* Android Material 3 Top App Bar */}
-      <AndroidTopAppBar />
+      <AndroidTopAppBar nativeMode={isNativeAndroid} />
 
       {/* Primary Dynamic Screen View */}
       <main className="flex-1 flex flex-col overflow-hidden relative">
@@ -54,15 +54,18 @@ const MainScreen: React.FC = () => {
       <AndroidNavigationBar activeTab={activeTab} onSelectTab={setActiveTab} />
 
       {/* Android Notification Center Pull-Down Drawer */}
-      <AndroidNotificationCenter
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-      />
+      {!isNativeAndroid && (
+        <AndroidNotificationCenter
+          isOpen={isNotificationsOpen}
+          onClose={() => setIsNotificationsOpen(false)}
+        />
+      )}
     </div>
   );
 };
 
 export default function App() {
+  const isNativeAndroid = isNativeAndroidApp();
   return (
     <DayProvider>
       {isNativeAndroid ? (
