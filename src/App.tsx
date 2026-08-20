@@ -12,6 +12,8 @@ import { TimelineView } from './components/views/TimelineView';
 import { RemindersAnchorsView } from './components/views/RemindersAnchorsView';
 import { EndOfDayReviewView } from './components/views/EndOfDayReviewView';
 
+const isNativeAndroid = typeof window !== 'undefined' && Boolean(window.DayTraceAndroid);
+
 const MainScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AndroidTab>('hub');
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -38,7 +40,7 @@ const MainScreen: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden relative">
       {/* Android System Status Bar (Interactive notification drawer trigger) */}
-      <AndroidStatusBar onOpenNotifications={() => setIsNotificationsOpen(true)} />
+      {!isNativeAndroid && <AndroidStatusBar onOpenNotifications={() => setIsNotificationsOpen(true)} />}
 
       {/* Android Material 3 Top App Bar */}
       <AndroidTopAppBar />
@@ -63,9 +65,15 @@ const MainScreen: React.FC = () => {
 export default function App() {
   return (
     <DayProvider>
-      <AndroidDeviceWrapper>
-        <MainScreen />
-      </AndroidDeviceWrapper>
+      {isNativeAndroid ? (
+        <div className="w-full h-full bg-[#111318] text-[#E2E2E6] overflow-hidden">
+          <MainScreen />
+        </div>
+      ) : (
+        <AndroidDeviceWrapper>
+          <MainScreen />
+        </AndroidDeviceWrapper>
+      )}
     </DayProvider>
   );
 }
