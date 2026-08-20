@@ -48,5 +48,5 @@
 
 /* Safe area padding for mobile navigation */
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }

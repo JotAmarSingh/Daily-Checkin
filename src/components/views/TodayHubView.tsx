@@ -53,11 +53,29 @@ export const TodayHubView: React.FC<TodayHubViewProps> = ({ onNavigateToTimetabl
   
   const recognitionRef = useRef<any>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll chat history to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [state.conversationHistory, isProcessing]);
+
+  // Some WebView versions need an explicit nudge after the visual viewport shrinks for the IME.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const keepInputVisible = () => {
+      if (document.activeElement === inputRef.current) {
+        window.requestAnimationFrame(() => inputRef.current?.scrollIntoView({ block: 'nearest' }));
+      }
+    };
+    viewport.addEventListener('resize', keepInputVisible);
+    viewport.addEventListener('scroll', keepInputVisible);
+    return () => {
+      viewport.removeEventListener('resize', keepInputVisible);
+      viewport.removeEventListener('scroll', keepInputVisible);
+    };
+  }, []);
 
   // Temporary feedback toast timer
   useEffect(() => {
@@ -529,7 +547,7 @@ export const TodayHubView: React.FC<TodayHubViewProps> = ({ onNavigateToTimetabl
       </div>
 
       {/* Interactive Natural Language Input Bar */}
-      <div className="p-3 bg-[#111318] border-t border-[#44474E]/30 z-20">
+      <div className="p-3 shrink-0 bg-[#111318] border-t border-[#44474E]/30 z-20">
         <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="flex items-center space-x-2">
           {/* Voice Input Button */}
           <button
@@ -549,6 +567,7 @@ export const TodayHubView: React.FC<TodayHubViewProps> = ({ onNavigateToTimetabl
           {/* Text Input */}
           <div className="flex-1 relative">
             <input
+              ref={inputRef}
               id="day-update-input"
               type="text"
               value={inputText}
@@ -664,5 +683,4 @@ export const TodayHubView: React.FC<TodayHubViewProps> = ({ onNavigateToTimetabl
     </div>
   );
 };
-
 

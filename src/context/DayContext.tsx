@@ -5,6 +5,7 @@ import { createFreshDailyState } from '../utils/freshState';
 import { recordTaskInteraction, recordRoutineInteraction, getLearningProfile, resetLearningProfile, AutoLearningProfile } from '../utils/autoLearning';
 import { processOfflineUpdate } from '../utils/offlineAi';
 import { syncNativeSchedule } from '../utils/nativeBridge';
+import { processWithOnDeviceAi } from '../utils/nativeAi';
 
 // v2 intentionally ignores the scaffold's pre-filled demonstration state.
 const STORAGE_KEY = 'daytrace_state_v2';
@@ -108,7 +109,7 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => clearInterval(interval);
   }, []);
 
-  // Process natural language input locally; no API key or network is required.
+  // Prefer Gemini Nano through Android AICore; fall back to the deterministic local parser.
   const processUserInput = useCallback(async (userInput: string): Promise<string> => {
     if (!userInput.trim()) return '';
     setIsProcessing(true);
@@ -131,7 +132,19 @@ export const DayProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     try {
-      const data = processOfflineUpdate(userInput, state, userTimestamp);
+      const nativeAi = await processWithOnDeviceAi(userInput, state, mode, userTimestamp);
+      const data = nativeAi?.status === 'available' && nativeAi.result
+        ? nativeAi.result
+        : processOfflineUpdate(userInput, state, userTimestamp);
+
+      if (nativeAi && nativeAi.status !== 'available') {
+        const statusMessage = nativeAi.status === 'downloading'
+          ? 'Gemini Nano is being prepared on this phone.'
+          : nativeAi.status === 'unavailable'
+            ? 'Gemini Nano is not available on this device configuration.'
+            : 'Gemini Nano could not process this update.';
+        data.aiResponseText = `${statusMessage} I used DayTrace’s offline parser instead. ${data.aiResponseText}`;
+      }
       const { aiResponseText, extractedStateUpdate } = data;
 
       // Apply extracted state updates cleanly

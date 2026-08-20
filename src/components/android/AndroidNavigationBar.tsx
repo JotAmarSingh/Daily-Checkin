@@ -28,7 +28,7 @@ export const AndroidNavigationBar: React.FC<AndroidNavigationBarProps> = ({ acti
   return (
     <nav
       id="android-bottom-navigation-bar"
-      className="w-full bg-[#111318] border-t border-[#44474E]/30 px-1 py-1 flex items-center justify-around z-30 select-none pb-safe"
+      className="w-full shrink-0 bg-[#111318] border-t border-[#44474E]/30 px-1 pt-2 flex items-center justify-around z-30 select-none pb-safe"
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;
@@ -39,7 +39,7 @@ export const AndroidNavigationBar: React.FC<AndroidNavigationBarProps> = ({ acti
             key={tab.id}
             id={`nav-tab-${tab.id}`}
             onClick={() => onSelectTab(tab.id)}
-            className="flex flex-col items-center justify-center flex-1 py-0.5 relative group focus:outline-none"
+            className="flex flex-col items-center justify-center flex-1 py-1 relative group focus:outline-none"
           >
             {/* Pill highlight for active tab (Material 3 style) */}
             <div
@@ -77,5 +77,4 @@ export const AndroidNavigationBar: React.FC<AndroidNavigationBarProps> = ({ acti
     </nav>
   );
 };
-
 
